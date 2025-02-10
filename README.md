@@ -1,1 +1,0 @@
-##bcntips-server
