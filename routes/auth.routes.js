@@ -18,11 +18,11 @@ const saltRounds = 10;
 
 // POST /auth/signup  - Creates a new user in the database
 router.post("/signup", (req, res, next) => {
-  const { email, password, name } = req.body;
+  const { email, password, firstName, lastName, favouriteTips } = req.body;
 
   // Check if email or password or name are provided as empty strings
-  if (email === "" || password === "" || name === "") {
-    res.status(400).json({ message: "Provide email, password and name" });
+  if (email === "" || password === "" || firstName === "" || lastName === "") {
+    res.status(400).json({ message: "Provide email, password, first and last name" });
     return;
   }
 
@@ -34,11 +34,11 @@ router.post("/signup", (req, res, next) => {
   }
 
   // This regular expression checks password for special characters and minimum length
-  const passwordRegex = /(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{6,}/;
+  const passwordRegex = /(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}/;
   if (!passwordRegex.test(password)) {
     res.status(400).json({
       message:
-        "Password must have at least 6 characters and contain at least one number, one lowercase and one uppercase letter.",
+        "Password must have at least 8 characters and contain at least one number, one lowercase and one uppercase letter.",
     });
     return;
   }
@@ -58,15 +58,15 @@ router.post("/signup", (req, res, next) => {
 
       // Create the new user in the database
       // We return a pending promise, which allows us to chain another `then`
-      return User.create({ email, password: hashedPassword, name });
+      return User.create({ email, password: hashedPassword, firstName, lastName, favouriteTips });
     })
     .then((createdUser) => {
       // Deconstruct the newly created user object to omit the password
       // We should never expose passwords publicly
-      const { email, name, _id } = createdUser;
+      const { email, firstName, lastName, favouriteTips, _id } = createdUser;
 
       // Create a new object that doesn't expose the password
-      const user = { email, name, _id };
+      const user = {  email, firstName, lastName, favouriteTips, _id };
 
       // Send a json response containing the user object
       res.status(201).json({ user: user });
@@ -89,7 +89,7 @@ router.post("/login", (req, res, next) => {
     .then((foundUser) => {
       if (!foundUser) {
         // If the user is not found, send an error response
-        res.status(401).json({ message: "User not found." });
+        res.status(401).json({ message: "Check your username or password." });
         return;
       }
 
@@ -112,7 +112,7 @@ router.post("/login", (req, res, next) => {
         // Send the token as the response
         res.status(200).json({ authToken: authToken });
       } else {
-        res.status(401).json({ message: "Unable to authenticate the user" });
+        res.status(401).json({ message: "Unable to authenticate the user." });
       }
     })
     .catch((err) => next(err)); // In this case, we send error handling to the error handling middleware.
@@ -127,5 +127,18 @@ router.get("/verify", isAuthenticated, (req, res, next) => {
   // Send back the token payload object containing the user data
   res.status(200).json(req.payload);
 });
+
+// Get User by Userid
+router.get("/users/:userId", isAuthenticated, (req, res, next) => {
+	User.findById(req.params.userId)
+		.then((user) => {
+			res.status(200).json(user);
+		})
+		.catch((error) => {
+			console.log(error);
+			next("Error when getting the Users");
+		});
+});
+
 
 module.exports = router;
