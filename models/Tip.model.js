@@ -21,9 +21,9 @@ const tipSchema = new Schema(
 			type: Schema.Types.ObjectId,
 			ref: "Barrio",
 		},
-		author: {
+		user: {
 			type: Schema.Types.ObjectId,
-			ref: "Author",
+			ref: "User",
 		},
 	},
 	{ timestamps: true }

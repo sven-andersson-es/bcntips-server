@@ -20,7 +20,7 @@ router.post("/tips", (req, res, next) => {
 		mapLng: req.body.mapLng,
 		category: req.body.category,
 		barrio: req.body.barrio,
-		author: req.body.author,
+		user: req.body.user,
 	})
 		.then((createdTip) => {
 			res.status(201).json(createdTip);
@@ -39,7 +39,7 @@ router.post("/tips", (req, res, next) => {
 //Get all Tips
 router.get("/tips", (req, res, next) => {
 	Tip.find({})
-		.populate("category", "barrio", "author")
+		.populate(["category", "barrio", "user"])
 		.then((allTips) => {
 			res.status(200).json(allTips);
 		})
@@ -52,7 +52,7 @@ router.get("/tips", (req, res, next) => {
 // Get Tip by tipId
 router.get("/tips/:tipId", (req, res, next) => {
 	Tip.findById(req.params.tipId)
-		.populate("category", "barrio", "author")
+		.populate(["category", "barrio", "user"])
 		.then((tip) => {
 			res.status(200).json(tip);
 		})

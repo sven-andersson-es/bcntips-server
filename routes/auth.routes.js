@@ -131,8 +131,14 @@ router.get("/verify", isAuthenticated, (req, res, next) => {
 // Get User by Userid
 router.get("/users/:userId", isAuthenticated, (req, res, next) => {
 	User.findById(req.params.userId)
-		.then((user) => {
-			res.status(200).json(user);
+  .populate({ path: "favouriteTips", select: '_id title' })
+  .then((user) => {
+      // We should never expose passwords publicly
+      const { email, firstName, lastName, favouriteTips, _id } = user;
+
+      // Create a new object that doesn't expose the password
+      const responseUser = {  email, firstName, lastName, favouriteTips, _id };
+			res.status(200).json(responseUser);
 		})
 		.catch((error) => {
 			console.log(error);
