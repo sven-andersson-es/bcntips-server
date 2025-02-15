@@ -18,8 +18,23 @@ require("./config")(app);
 const indexRoutes = require("./routes/index.routes");
 app.use("/api", indexRoutes);
 
+// TIP ROUTES
+const tipRoutes = require("./routes/tip.routes");
+app.use("/api", tipRoutes);
+
+// BARRIO ROUTES
+const barrioRoutes = require("./routes/barrio.routes");
+app.use("/api", barrioRoutes);
+
+// CATEGORY ROUTES
+const categoryRoutes = require("./routes/category.routes");
+app.use("/api", categoryRoutes);
+
+// AUTH ROUTES
 const authRoutes = require("./routes/auth.routes");
 app.use("/auth", authRoutes);
+
+
 
 // ❗ To handle errors. Routes that don't exist or errors that you handle in specific routes
 require("./error-handling")(app);

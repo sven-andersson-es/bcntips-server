@@ -8,6 +8,7 @@ module.exports = (app) => {
     // whenever you call next(err), this middleware will handle the error
     // always logs the error
     console.error("ERROR", req.method, req.path, err);
+    res.status(500).json({ error: err });
 
     // only render if the error ocurred before sending the response
     if (!res.headersSent) {
