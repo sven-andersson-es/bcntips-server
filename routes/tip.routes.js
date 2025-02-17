@@ -4,8 +4,14 @@ const router = express.Router();
 // Require the Cohort model in order to interact with the database
 const Tip = require("../models/Tip.model");
 
+// Require middleware for authentication
+const {
+	isAuthenticated,
+	authorize,
+} = require("../middleware/jwt.middleware.js");
+
 //C R U D
-router.post("/tips", (req, res, next) => {
+router.post("/tips", authorize(["ADMIN", "SUPERADMIN"]), (req, res, next) => {
 	//To-do Validate and send correct message to error handling
 	Tip.create({
 		title: req.body.title,
@@ -63,27 +69,35 @@ router.get("/tips/:tipId", (req, res, next) => {
 });
 
 //Update Tip
-router.put("/tips/:tipId", (req, res, next) => {
-	Tip.findByIdAndUpdate(req.params.tipId, req.body, { new: true }) // {new:true} updates the response we send to the frontend. without it, the visual part is updated too, but the response is not
-		.then((tip) => {
-			res.status(200).json(tip);
-		})
-		.catch((error) => {
-			console.log(error);
-			next("Error when updating the tip");
-		});
-});
+router.put(
+	"/tips/:tipId",
+	authorize(["ADMIN", "SUPERADMIN"]),
+	(req, res, next) => {
+		Tip.findByIdAndUpdate(req.params.tipId, req.body, { new: true }) // {new:true} updates the response we send to the frontend. without it, the visual part is updated too, but the response is not
+			.then((tip) => {
+				res.status(200).json(tip);
+			})
+			.catch((error) => {
+				console.log(error);
+				next("Error when updating the tip");
+			});
+	}
+);
 
 //Delete a Tip
-router.delete("/tips/:tipId", (req, res, next) => {
-	Tip.findByIdAndDelete(req.params.tipId)
-		.then((tip) => {
-			res.status(204).json(tip);
-		})
-		.catch((error) => {
-			console.log(error);
-			next("Error when deleting the tip");
-		});
-});
+router.delete(
+	"/tips/:tipId",
+	authorize(["ADMIN", "SUPERADMIN"]),
+	(req, res, next) => {
+		Tip.findByIdAndDelete(req.params.tipId)
+			.then((tip) => {
+				res.status(204).json(tip);
+			})
+			.catch((error) => {
+				console.log(error);
+				next("Error when deleting the tip");
+			});
+	}
+);
 
 module.exports = router;

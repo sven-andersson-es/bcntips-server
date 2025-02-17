@@ -4,8 +4,14 @@ const router = express.Router();
 // Require the Cohort model in order to interact with the database
 const Category = require("../models/Category.model");
 
+// Require middleware for authentication
+const {
+	isAuthenticated,
+	authorize,
+} = require("../middleware/jwt.middleware.js");
+
 //C R U D
-router.post("/categories", (req, res, next) => {
+router.post("/categories", authorize(["ADMIN", "SUPERADMIN"]), (req, res, next) => {
 	//To-do Validate and send correct message to error handling
 	Category.create({
 		categoryName: req.body.categoryName,
@@ -50,7 +56,7 @@ router.get("/categories/:categoryId", (req, res, next) => {
 });
 
 //Update Category
-router.put("/categories/:categoryId", (req, res, next) => {
+router.put("/categories/:categoryId", authorize(["ADMIN", "SUPERADMIN"]), (req, res, next) => {
 	Category.findByIdAndUpdate(req.params.categoryId, req.body, { new: true }) // {new:true} updates the response we send to the frontend. without it, the visual part is updated too, but the response is not
 		.then((category) => {
 			res.status(200).json(category);
@@ -62,7 +68,7 @@ router.put("/categories/:categoryId", (req, res, next) => {
 });
 
 //Delete a Category
-router.delete("/categories/:categoryId", (req, res, next) => {
+router.delete("/categories/:categoryId", authorize(["ADMIN", "SUPERADMIN"]), (req, res, next) => {
 	Category.findByIdAndDelete(req.params.categoryId)
 		.then((category) => {
 			res.status(204).json(category);

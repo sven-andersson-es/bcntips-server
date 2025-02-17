@@ -28,6 +28,17 @@ const userSchema = new Schema(
 				ref: "Tip",
 			},
 		],
+		userRole: {
+			type: String,
+			required: [true, "A role has to be assigned to the user."],
+			enum: [
+				"USER",
+				"EDITOR",
+				"ADMIN",
+				"SUPERADMIN"
+			],
+			default: "USER",
+		},
 	},
 	{
 		timestamps: true,

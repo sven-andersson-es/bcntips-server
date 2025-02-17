@@ -4,8 +4,14 @@ const router = express.Router();
 // Require the Cohort model in order to interact with the database
 const Barrio = require("../models/Barrio.model");
 
+// Require middleware for authentication
+const {
+	isAuthenticated,
+	authorize,
+} = require("../middleware/jwt.middleware.js");
+
 //C R U D
-router.post("/barrios", (req, res, next) => {
+router.post("/barrios", authorize(["ADMIN", "SUPERADMIN"]), (req, res, next) => {
 	//To-do Validate and send correct message to error handling
 	Barrio.create({
 		barrioName: req.body.barrioName,
@@ -26,7 +32,7 @@ router.post("/barrios", (req, res, next) => {
 });
 
 //Get all Barrios
-router.get("/barrios", (req, res, next) => {
+router.get("/barrios", authorize(["ADMIN", "SUPERADMIN"]), (req, res, next) => {
 	Barrio.find({})
 		.then((allBarrios) => {
 			res.status(200).json(allBarrios);
@@ -50,7 +56,7 @@ router.get("/barrios/:barrioId", (req, res, next) => {
 });
 
 //Update Barrio
-router.put("/barrios/:barrioId", (req, res, next) => {
+router.put("/barrios/:barrioId", authorize(["ADMIN", "SUPERADMIN"]), (req, res, next) => {
 	Barrio.findByIdAndUpdate(req.params.barrioId, req.body, { new: true }) // {new:true} updates the response we send to the frontend. without it, the visual part is updated too, but the response is not
 		.then((barrio) => {
 			res.status(200).json(barrio);
@@ -62,7 +68,7 @@ router.put("/barrios/:barrioId", (req, res, next) => {
 });
 
 //Delete a Barrio
-router.delete("/barrios/:barrioId", (req, res, next) => {
+router.delete("/barrios/:barrioId", authorize(["ADMIN", "SUPERADMIN"]), (req, res, next) => {
 	Barrio.findByIdAndDelete(req.params.barrioId)
 		.then((barrio) => {
 			res.status(204).json(barrio);
