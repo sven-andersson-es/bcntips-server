@@ -32,7 +32,7 @@ router.post("/barrios", authorize(["ADMIN", "SUPERADMIN"]), (req, res, next) => 
 });
 
 //Get all Barrios
-router.get("/barrios", authorize(["ADMIN", "SUPERADMIN"]), (req, res, next) => {
+router.get("/barrios", (req, res, next) => {
 	Barrio.find({})
 		.then((allBarrios) => {
 			res.status(200).json(allBarrios);

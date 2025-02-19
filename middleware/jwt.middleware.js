@@ -19,12 +19,7 @@ const authorize = (roles) => {
 
 	return [
 		// authenticate JWT token and attach user to request object (req.user)
-		jwt({
-			secret: process.env.TOKEN_SECRET,
-			algorithms: ["HS256"],
-			requestProperty: "payload",
-			getToken: getTokenFromHeaders,
-		}),
+		isAuthenticated,
 		// authorize based on user role
 		(req, res, next) => {
 			const _id = req.payload._id;

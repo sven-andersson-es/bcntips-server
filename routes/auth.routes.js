@@ -165,11 +165,20 @@ router.get("/users/:userId", isAuthenticated, (req, res, next) => {
 		.populate({ path: "favouriteTips", select: "_id title" })
 		.then((user) => {
 			// We should never expose passwords publicly
-			const { email, firstName, lastName, favouriteTips, _id } = user;
+			const { email, firstName, lastName, favouriteTips, _id, userRole} = user;
 
 			// Create a new object that doesn't expose the password
-			const responseUser = { email, firstName, lastName, favouriteTips, _id };
-			res.status(200).json(responseUser);
+			const responseUser = { email, firstName, lastName, favouriteTips, _id, userRole };
+			// Get the user id from the isAuthenticated payload
+      const authUser = req.payload._id
+      // Verify that the user authenticated user is the same as the one being requested
+      if (authUser !== req.params.userId) {
+				// If the user is not found, send an error response
+				res.status(401).json({ message: "User don't match." });
+				return;
+			}
+
+      res.status(200).json(responseUser);
 		})
 		.catch((error) => {
 			console.log(error);
