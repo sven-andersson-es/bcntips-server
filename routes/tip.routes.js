@@ -45,7 +45,10 @@ router.post("/tips", authorize(["ADMIN", "SUPERADMIN"]), (req, res, next) => {
 //Get all Tips
 router.get("/tips", (req, res, next) => {
 	Tip.find({})
-		.populate(["category", "barrio", "user"])
+		.populate(["category", "barrio", {
+			path:'user',
+			select:'email firstName lastName'
+	   }])
 		.then((allTips) => {
 			res.status(200).json(allTips);
 		})
