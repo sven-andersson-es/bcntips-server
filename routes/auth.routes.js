@@ -105,6 +105,44 @@ router.post("/signup", (req, res, next) => {
 		.catch((err) => next(err)); // In this case, we send error handling to the error handling middleware.
 });
 
+// PUT  /auth/password - Change password
+router.put("/users/password", isAuthenticated, (req, res, next) => {
+	console.log(req.payload._id);
+	const password = req.body.password;
+	const authUser = req.payload._id;
+
+	// Check if email or password or name are provided as empty strings
+	if (password === "") {
+		res.status(400).json({ message: "Provide a password" });
+		return;
+	}
+
+	// This regular expression checks password for special characters and minimum length
+	const passwordRegex = /(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}/;
+	if (!passwordRegex.test(password)) {
+		res.status(400).json({
+			message:
+				"Password must have at least 8 characters and contain at least one number, one lowercase and one uppercase letter.",
+		});
+		return;
+	}
+
+  const salt = bcrypt.genSaltSync(saltRounds);
+	const hashedPassword = bcrypt.hashSync(password, salt);
+
+	User.findByIdAndUpdate(authUser, {password: hashedPassword}, {
+		new: false,
+	})
+		.then((user) => {
+			console.log(user);
+			res.status(200).json({ message: "Your password has been updated" });
+		})
+		.catch((error) => {
+			console.log(error);
+			next("Error when updating the password");
+		});
+});
+
 // POST  /auth/login - Verifies email and password and returns a JWT
 router.post("/login", (req, res, next) => {
 	const { email, password } = req.body;
@@ -165,20 +203,27 @@ router.get("/users/:userId", isAuthenticated, (req, res, next) => {
 		.populate({ path: "favouriteTips", select: "_id title" })
 		.then((user) => {
 			// We should never expose passwords publicly
-			const { email, firstName, lastName, favouriteTips, _id, userRole} = user;
+			const { email, firstName, lastName, favouriteTips, _id, userRole } = user;
 
 			// Create a new object that doesn't expose the password
-			const responseUser = { email, firstName, lastName, favouriteTips, _id, userRole };
+			const responseUser = {
+				email,
+				firstName,
+				lastName,
+				favouriteTips,
+				_id,
+				userRole,
+			};
 			// Get the user id from the isAuthenticated payload
-      const authUser = req.payload._id
-      // Verify that the user authenticated user is the same as the one being requested
-      if (authUser !== req.params.userId) {
+			const authUser = req.payload._id;
+			// Verify that the user authenticated user is the same as the one being requested
+			if (authUser !== req.params.userId) {
 				// If the user is not found, send an error response
-				res.status(401).json({ message: "User don't match." });
+				res.status(401).json({ message: "User doesn't match." });
 				return;
 			}
 
-      res.status(200).json(responseUser);
+			res.status(200).json(responseUser);
 		})
 		.catch((error) => {
 			console.log(error);
@@ -205,5 +250,30 @@ router.put(
 			});
 	}
 );
+
+// Add a new favourite
+router.put("/users/favouritetips/", isAuthenticated, (req, res, next) => {
+	console.log(req.body.userId, req.body.favouriteTips);
+
+	const authUser = req.payload._id;
+
+	if (authUser !== req.body.userId) {
+		// If the user is not found, send an error response
+		res.status(401).json({ message: "User doesn't match." });
+		return;
+	}
+
+	User.findByIdAndUpdate(req.params.userId, req.body.favouriteTips, {
+		new: true,
+	}) // {new:true} updates the response we send to the frontend. without it, the visual part is updated too, but the response is not
+		.then((user) => {
+			console.log(user);
+			res.status(200).json(favouriteTips.favouriteTips);
+		})
+		.catch((error) => {
+			console.log(error);
+			next("Error when adding the favourite");
+		});
+});
 
 module.exports = router;
