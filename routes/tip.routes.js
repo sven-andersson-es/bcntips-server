@@ -44,7 +44,19 @@ router.post("/tips", authorize(["ADMIN", "SUPERADMIN"]), (req, res, next) => {
 
 //Get all Tips
 router.get("/tips", (req, res, next) => {
-	Tip.find({})
+	let findQuery = {}
+	if (req.query.category && req.query.barrio) {
+		findQuery = {$and: [
+		{category: {$in: req.query.category} },
+		{barrio: {$in: req.query.barrio} }
+		]}
+	} else if (req.query.category && !req.query.barrio) {
+		findQuery = {category: {$in: req.query.category}}
+	} else if (!req.query.category && req.query.barrio) {
+		findQuery = {barrio: {$in: req.query.barrio}}
+	}
+
+	Tip.find(findQuery)
 		.populate(["category", "barrio", {
 			path:'user',
 			select:'email firstName lastName'
