@@ -45,16 +45,21 @@ router.post("/tips", authorize(["ADMIN", "SUPERADMIN"]), (req, res, next) => {
 //Get all Tips
 router.get("/tips", (req, res, next) => {
 	let findQuery = {}
+	console.log(typeof req.query.category);
+	
+	
 	if (req.query.category && req.query.barrio) {
 		findQuery = {$and: [
-		{category: {$in: req.query.category} },
-		{barrio: {$in: req.query.barrio} }
+		{category: {$in: req.query.category.split(",")} },
+		{barrio: {$in: req.query.barrio.split(",")} }
 		]}
 	} else if (req.query.category && !req.query.barrio) {
-		findQuery = {category: {$in: req.query.category}}
+		findQuery = {category: {$in: req.query.category.split(",")}}
 	} else if (!req.query.category && req.query.barrio) {
-		findQuery = {barrio: {$in: req.query.barrio}}
+		findQuery = {barrio: {$in: req.query.barrio.split(",")}}
 	}
+
+	console.log(findQuery);
 
 	Tip.find(findQuery)
 		.populate(["category", "barrio", {
