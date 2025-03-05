@@ -1,6 +1,8 @@
 const express = require("express");
 const router = express.Router();
 
+const mongoose = require("mongoose");
+
 // ℹ️ Handles password encryption
 const bcrypt = require("bcrypt");
 
@@ -127,12 +129,16 @@ router.put("/users/password", isAuthenticated, (req, res, next) => {
 		return;
 	}
 
-  const salt = bcrypt.genSaltSync(saltRounds);
+	const salt = bcrypt.genSaltSync(saltRounds);
 	const hashedPassword = bcrypt.hashSync(password, salt);
 
-	User.findByIdAndUpdate(authUser, {password: hashedPassword}, {
-		new: false,
-	})
+	User.findByIdAndUpdate(
+		authUser,
+		{ password: hashedPassword },
+		{
+			new: false,
+		}
+	)
 		.then((user) => {
 			console.log(user);
 			res.status(200).json({ message: "Your password has been updated" });
@@ -167,10 +173,10 @@ router.post("/login", (req, res, next) => {
 
 			if (passwordCorrect) {
 				// Deconstruct the user object to omit the password
-				const { _id, email, firstName, userRole } = foundUser;
+				const { _id, email, firstName, userRole, favouriteTips } = foundUser;
 
 				// Create an object that will be set as the token payload
-				const payload = { _id, email, firstName, userRole };
+				const payload = { _id, email, firstName, userRole, favouriteTips };
 
 				// Create a JSON Web Token and sign it
 				const authToken = jwt.sign(payload, process.env.TOKEN_SECRET, {
@@ -251,29 +257,60 @@ router.put(
 	}
 );
 
-// Add a new favourite
-router.put("/users/favouritetips/", isAuthenticated, (req, res, next) => {
-	console.log(req.body.userId, req.body.favouriteTips);
-
-	const authUser = req.payload._id;
-
-	if (authUser !== req.body.userId) {
-		// If the user is not found, send an error response
-		res.status(401).json({ message: "User doesn't match." });
-		return;
-	}
-
-	User.findByIdAndUpdate(req.params.userId, req.body.favouriteTips, {
-		new: true,
-	}) // {new:true} updates the response we send to the frontend. without it, the visual part is updated too, but the response is not
+router.get("/favourites", isAuthenticated, (req, res, next) => {
+	const { _id } = req.payload;
+	User.findById({ _id })
 		.then((user) => {
-			console.log(user);
-			res.status(200).json(favouriteTips.favouriteTips);
+			const { favouriteTips } = user;
+			const response = {
+				favouriteTips,
+			};
+			res.status(200).json(response);
 		})
 		.catch((error) => {
 			console.log(error);
-			next("Error when adding the favourite");
+			next("Error when getting the Favourites");
 		});
+});
+
+// Add a new favourite
+router.put("/favourites/:tipId", isAuthenticated, (req, res, next) => {
+	const { _id } = req.payload;
+	const tipId = new mongoose.Types.ObjectId(`${req.params.tipId}`);
+	console.log(tipId);
+
+	User.findById({ _id }).then((user) => {
+		const { favouriteTips } = user;
+		const editMode = favouriteTips.find((tip) => {
+			return tip.toString() === tipId.toString();
+		});
+		let updatedFavouriteTips;
+		// if editMode = true then it means the id exists and we want to remove it, else other way around
+		if (editMode) {
+			updatedFavouriteTips = favouriteTips.filter((tip) => {
+				return tip.toString() != tipId.toString();
+			});
+		} else {
+			favouriteTips.push(tipId);
+			updatedFavouriteTips = favouriteTips;
+		}
+
+		User.findByIdAndUpdate(
+			_id,
+			{ favouriteTips: updatedFavouriteTips },
+			{
+				new: true,
+			}
+		)
+			.then((user) => {
+				//console.log(user);
+				res.status(200).json(user.favouriteTips);
+			})
+			.catch((error) => {
+				console.log(error);
+				next("Error when adding the favourite");
+			});
+	});
 });
 
 module.exports = router;
