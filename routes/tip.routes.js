@@ -18,7 +18,7 @@ router.post("/tips", authorize(["ADMIN", "SUPERADMIN"]), (req, res, next) => {
 	//To-do Validate and send correct message to error handling
 	Tip.create({
 		title: req.body.title,
-		title: req.body.imageUrl,
+		imageUrl: req.body.imageUrl,
 		introText: req.body.introText,
 		bodyText: req.body.bodyText,
 		street: req.body.street,
