@@ -10,7 +10,9 @@ const tipSchema = new Schema(
 		streetNo: { type: String, required: false },
 		zip: { type: String, required: false },
 		city: { type: String, required: false },
+		telephone: { type: String, required: false },
 		mapPlaceId: { type: String, required: false, unique: true },
+		googleMapsUri: { type: String, required: false, unique: true },
 		mapLat: { type: Schema.Types.Decimal128, required: false },
 		mapLng: { type: Schema.Types.Decimal128, required: false },
 		category: {
