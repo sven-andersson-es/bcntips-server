@@ -3,7 +3,12 @@ const Schema = mongoose.Schema;
 
 const tipSchema = new Schema(
 	{
-		title: { type: String, required: true, unique: [true, "The title already exists"],   },
+		title: {
+			type: String,
+			required: true,
+			unique: [true, "The title already exists"],
+		},
+		imageUrl: { type: String, required: false },
 		introText: { type: String, required: true },
 		bodyText: { type: String, required: false },
 		street: { type: String, required: false },

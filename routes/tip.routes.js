@@ -4,6 +4,9 @@ const router = express.Router();
 // Require the Cohort model in order to interact with the database
 const Tip = require("../models/Tip.model");
 
+// To upload image files to Cloudinary
+const fileUploader = require("../config/cloudinary.config");
+
 // Require middleware for authentication
 const {
 	isAuthenticated,
@@ -15,6 +18,7 @@ router.post("/tips", authorize(["ADMIN", "SUPERADMIN"]), (req, res, next) => {
 	//To-do Validate and send correct message to error handling
 	Tip.create({
 		title: req.body.title,
+		title: req.body.imageUrl,
 		introText: req.body.introText,
 		bodyText: req.body.bodyText,
 		street: req.body.street,
@@ -121,5 +125,20 @@ router.delete(
 			});
 	}
 );
+
+// POST "/api/upload" => Route that receives the image, sends it to Cloudinary via the fileUploader and returns the image URL
+router.post("/image", authorize(["ADMIN", "SUPERADMIN"]), fileUploader.single("imageUrl"), (req, res, next) => {
+	// console.log("file is: ", req.file)
+   
+	if (!req.file) {
+	  next(new Error("No file uploaded!"));
+	  return;
+	}
+	
+	// Get the URL of the uploaded file and send it as a response.
+	// 'fileUrl' can be any name, just make sure you remember to use the same when accessing it on the frontend
+	
+	res.json({ fileUrl: req.file.path });
+  });
 
 module.exports = router;
