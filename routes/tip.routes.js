@@ -138,7 +138,7 @@ router.post("/image", authorize(["ADMIN", "SUPERADMIN"]), fileUploader.single("i
 	// Get the URL of the uploaded file and send it as a response.
 	// 'fileUrl' can be any name, just make sure you remember to use the same when accessing it on the frontend
 	
-	res.json({ fileUrl: req.file.path });
+	res.json({ fileUrl: req.file.filename });
   });
 
 module.exports = router;
